@@ -3,7 +3,7 @@ name: CD
 on:
   push:
     branches: [ main ]
-    
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -43,6 +43,7 @@ jobs:
           # pkill -f "bundle exec ruby app.rb"が存在しなければtrueとする
           # nohup sshの接続が切れてもbundle exec ruby app.rb -o 0.0.0.0を実行
           # & GitHub Actionsを完了できる
+          
           run: |
             echo "$PRIVATE_KEY" > aws-network-test-key.pem
             chmod 600 aws-network-test-key.pem
