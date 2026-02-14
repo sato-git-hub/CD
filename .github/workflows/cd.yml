@@ -46,10 +46,10 @@ jobs:
           run: |
             echo "$PRIVATE_KEY" > aws-network-test-key.pem
             chmod 600 aws-network-test-key.pem
-            ssh -i　aws-network-test-key.pem -o StrictHostKeyChecking=no $USER_NAME@$HOSTNAME <<EOF
+            ssh -i aws-network-test-key.pem -o StrictHostKeyChecking=no $USER_NAME@$HOSTNAME <<EOF
             cd /home/ec2-user/CD
             git pull origin main
             bundle install
             pkill -f "bundle exec ruby app.rb" || true
-            nohup　bundle exec ruby app.rb -o 0.0.0.0 > log.txt 2>&1 &
+            nohup bundle exec ruby app.rb -o 0.0.0.0 > log.txt 2>&1 &
             EOF
