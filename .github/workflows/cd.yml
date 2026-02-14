@@ -1,0 +1,43 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1  
+      with:
+        ruby-version: '3.2'     
+        bundler-cache: true   
+
+    - name: Amazon EC2　deploy
+      env:
+          PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY  }}
+          HOSTNAME : ${{ secrets.HOSTNAME  }}
+          USER_NAME : ${{ secrets.USER_NAME  }}
+
+      # <<EOFからEOFが出てくるまでの内容を SSH上で実行
+      # pkill プロセス名 rubyのプログラムすべて
+      # -f プロセス名だけでなく、実行時のコマンドを検索対象にする
+      # || true　起動していない時のエラー防止
+      # pkill -f "bundle exec ruby app.rb"が存在しなければtrueとする
+      # nohup sshの接続が切れてもbundle exec ruby app.rb -o 0.0.0.0を実行
+      # & GitHub Actionsを完了できる
+      run: |
+        echo "$PRIVATE_KEY" > aws-network-test-key.pem
+        chmod 600 aws-network-test-key.pem
+        ssh -i　aws-network-test-key.pem -o StrictHostKeyChecking=no $USER_NAME@$HOSTNAME <<EOF
+        cd /home/ec2-user/CD
+        git pull origin main
+        bundle install
+        pkill -f "bundle exec ruby app.rb" || true
+        nohup　bundle exec ruby app.rb -o 0.0.0.0 > log.txt 2>&1 &
+        EOF
