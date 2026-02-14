@@ -43,14 +43,18 @@ jobs:
           # pkill -f "bundle exec ruby app.rb"が存在しなければtrueとする
           # nohup sshの接続が切れてもbundle exec ruby app.rb -o 0.0.0.0を実行
           # & GitHub Actionsを完了できる
-          
+
           run: |
-            echo "$PRIVATE_KEY" > aws-network-test-key.pem
+            cat <<'EOF' > aws-network-test-key.pem
+            ${{ secrets.AWS_PRIVATE_KEY }}
+            EOF
+
             chmod 600 aws-network-test-key.pem
-            ssh -i aws-network-test-key.pem -o StrictHostKeyChecking=no $USER_NAME@$HOSTNAME <<EOF
+
+            ssh -i aws-network-test-key.pem -o StrictHostKeyChecking=no ${USER_NAME}@${HOSTNAME} <<'SSH_EOF'
             cd /home/ec2-user/CD
             git pull origin main
             bundle install
             pkill -f "bundle exec ruby app.rb" || true
             nohup bundle exec ruby app.rb -o 0.0.0.0 > log.txt 2>&1 &
-            EOF
+            SSH_EOF
